@@ -6,7 +6,7 @@ device) using the `webcontrol.py` tool.
 
 You can start the tool by running the following command on your Raspberry Pi::
 
-    $ python3 ./simplewebcontrol.py
+    $ python3 ./webcontrol.py
 
 This will start a simple web server on port 8000 which you can access using
 a web browser.
@@ -33,7 +33,11 @@ You can set the output port using the URL::
 
 Changing Port
 -------------
-You can specify which port you would like ``simplewebcontrol.py`` to use by
+You can specify which port you would like ``webcontrol.py`` to use by
 passing the port number as the first argument::
 
-    $ python3 /usr/share/doc/python3-pifacedigitalio/examples/simplewebcontrol.py 12345
+    $ python3 ./webcontrol.py 12345
+
+https://pypi.python.org/pypi/pifacedigitalio/
+http://piface.github.io/pifacedigitalio/pifacedigital.html
+http://piface.github.io/pifacedigitalio/simplewebcontrol.html

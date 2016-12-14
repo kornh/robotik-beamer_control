@@ -21,66 +21,104 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 import subprocess
-import http.server
 import urllib.parse
+import http.server
 import pifacedigitalio
 
 
-JSON_FORMAT = "{{'input_port': {input}, 'output_port': {output}}}"
+JSON_FORMAT = "{{'relay': {num}, 'status': {status}}}"
 DEFAULT_PORT = 8000
-OUTPUT_PORT_GET_STRING = "output_port"
+OUTPUT_PORT_GET_STRING = "relay"
 GET_IP_CMD = "hostname -I"
 
 
 class PiFaceWebHandler(http.server.BaseHTTPRequestHandler):
     """Handles PiFace web control requests"""
     def do_GET(self):
-        output_value = self.pifacedigital.output_port.value
-        input_value = self.pifacedigital.input_port.value
-
+        """GET Handler"""
         # parse the query string
-        qs = urllib.parse.urlparse(self.path).query
-        query_components = urllib.parse.parse_qs(qs)
+        qss = urllib.parse.urlparse(self.path).query
+        query_components = urllib.parse.parse_qs(qss)
 
-        # set the output
-        if OUTPUT_PORT_GET_STRING in query_components:
-            new_output_value = query_components["output_port"][0]
-            output_value = self.set_output_port(new_output_value, output_value)
+        relay = self.get_relay_value(query_components)
+        status = self.get_status_value(query_components)
+        #'No valid status!'
 
+        if relay < 0:
+            if relay == -1:
+                relay = 'No relay given!'
+            if relay == -2:
+                relay = 'No valid relay!'
+            status = 'Status unused!'
+            self.response(self, relay, status)
+            return
+        if status < 0:
+            if status == -1:
+                status = self.get_relay(relay)
+            if status == -2:
+                status = 'No valid status!'
+            self.response(self, relay, status)
+            return
+        self.set_relay(relay, status)
+
+    def response(self, relay, status):
+        """Response to client"""
         # reply with JSON
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
         self.wfile.write(bytes(JSON_FORMAT.format(
-            input=input_value,
-            output=output_value,
+            num=relay,
+            status=status,
         ), 'UTF-8'))
 
-    def set_output_port(self, new_value, old_value=0):
-        """Sets the output port value to new_value, defaults to old_value."""
-        print("Setting output port to {}.".format(new_value))
-        port_value = old_value
+    def get_relay_value(self, query_components):
+        """Gets the relay query value."""
+        if 'relay' not in query_components:
+            return -1
+        relay = query_components["relay"][0]
         try:
-            port_value = int(new_value)  # dec
+            relay_num = int(relay)
+            if relay_num > 1 or relay_num < 0:
+                raise ValueError('relay out of range!')
         except ValueError:
-            port_value = int(new_value, 16)  # hex
-        finally:
-            self.pifacedigital.output_port.value = port_value
-            return port_value
+            return -2
+        return relay_num
 
+    def get_status_value(self, query_components):
+        """Gets the status query value."""
+        if 'status' not in query_components:
+            return -1
+        status = query_components["status"][0]
+        try:
+            port_value = int(status)  # dec
+            if port_value > 1 or port_value < 0:
+                raise ValueError('status out of range!')
+        except ValueError:
+            return -2
+        return port_value
+
+    def set_relay(self, relay, port_value):
+        """Sets the relay status value."""
+        print("Setting relay {} to {}.".format(relay, port_value))
+        self.pifacedigital.relays[relay].value = port_value
+
+    def get_relay(self, relay):
+        """Gets the relay status value."""
+        return self.pifacedigital.relays[relay].value
 
 def get_my_ip():
     """Returns this computers IP address as a string."""
-    ip = subprocess.check_output(GET_IP_CMD, shell=True).decode('utf-8')[:-1]
-    return ip.strip()
+    ips = subprocess.check_output(GET_IP_CMD, shell=True).decode('utf-8')[:-1]
+    return ips.strip()
 
 
 if __name__ == "__main__":
     # get the port
     if len(sys.argv) > 1:
-        port = int(sys.argv[1])
+        PORT = int(sys.argv[1])
     else:
-        port = DEFAULT_PORT
+        PORT = DEFAULT_PORT
 
     # set up PiFace Digital
     PiFaceWebHandler.pifacedigital = pifacedigitalio.PiFaceDigital()
@@ -89,13 +127,13 @@ if __name__ == "__main__":
           "\thttp://{addr}:{port}\n\n"
           "Change the output_port with:\n\n"
           "\thttp://{addr}:{port}?output_port=0xAA\n"
-          .format(addr=get_my_ip(), port=port))
+          .format(addr=get_my_ip(), port=PORT))
 
     # run the server
-    server_address = ('', port)
+    SERVER_ADDRESS = ('', PORT)
     try:
-        httpd = http.server.HTTPServer(server_address, PiFaceWebHandler)
-        httpd.serve_forever()
+        HTTPD = http.server.HTTPServer(SERVER_ADDRESS, PiFaceWebHandler)
+        HTTPD.serve_forever()
     except KeyboardInterrupt:
         print('^C received, shutting down server')
-        httpd.socket.close()
+        HTTPD.socket.close()
