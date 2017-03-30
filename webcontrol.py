@@ -42,29 +42,43 @@ class PiFaceWebHandler(http.server.BaseHTTPRequestHandler):
 
         relay = self.get_relay_value(query_components)
         status = self.get_status_value(query_components)
+        print("Request Relay:{} Status:{}.".format(relay, status))
         #'No valid status!'
 
-        if relay < 0:
+        if relay >= 0 and status >= 0:
+            self.set_relay(relay, status)
+            self.response(relay, status)
+            return
+        if int(relay) < 0:
             if relay == -1:
                 relay = 'No relay given!'
             if relay == -2:
                 relay = 'No valid relay!'
             status = 'Status unused!'
-            self.response(self, relay, status)
+            self.error_response(relay, status)
             return
-        if status < 0:
+        if int(status) < 0:
             if status == -1:
                 status = self.get_relay(relay)
             if status == -2:
                 status = 'No valid status!'
-            self.response(self, relay, status)
-            return
-        self.set_relay(relay, status)
+            self.error_response(relay, status)
 
     def response(self, relay, status):
         """Response to client"""
         # reply with JSON
         self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        self.wfile.write(bytes(JSON_FORMAT.format(
+            num=relay,
+            status=status,
+        ), 'UTF-8'))
+
+    def error_response(self, relay, status):
+        """Response to client"""
+        # reply with JSON
+        self.send_response(404)
         self.send_header("Content-type", "application/json")
         self.end_headers()
         self.wfile.write(bytes(JSON_FORMAT.format(
@@ -125,8 +139,6 @@ if __name__ == "__main__":
 
     print("Starting simple PiFace web control at:\n\n"
           "\thttp://{addr}:{port}\n\n"
-          "Change the output_port with:\n\n"
-          "\thttp://{addr}:{port}?output_port=0xAA\n"
           .format(addr=get_my_ip(), port=PORT))
 
     # run the server

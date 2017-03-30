@@ -14,21 +14,29 @@ a web browser.
 Type the following into the address bar of a browser on any machine in the
 local network::
 
-    http://192.168.1.3:8000
+Relay 0:
+    http://192.168.178.69:8000/?relay=0
+Relay 1:
+    http://192.168.178.69:8000/?relay=1
 
-.. note:: Relace ``192.168.1.3`` with the IP address of your Raspberry Pi.
 
 It will return a `JSON object <http://www.json.org/>`_ describing the current
 state of PiFace Digital::
 
-    {'input_port': 0, 'output_port': 0}
+Relay 0:
+    {'relay': 0, 'status': 0} OR {'relay': 0, 'status': 1}
+Relay 1:
+    {'relay': 1, 'status': 0} OR {'relay': 1, 'status': 1}
 
 
 Controlling Output
 ------------------
 You can set the output port using the URL::
 
-    http://192.168.1.61:8000/?output_port=0xaa
+Relay 0:
+    http://192.168.178.69:8000/?relay=0&status=0 OR http://192.168.178.69:8000/?relay=0&status=1
+Relay 1:
+    http://192.168.178.69:8000/?relay=1&status=0 OR http://192.168.178.69:8000/?relay=1&status=1
 
 
 Changing Port
