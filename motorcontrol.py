@@ -37,7 +37,9 @@ def set_pin(motor, status):
 
     motor = (0 if motor == 1 else 1)
     status = (0 if status > 0 else 1)
+    print('Motor: {} Status: {}'.format(motor, status))
     pin = PINS[motor][status]
+    print(pin)
     GPIO.output(pin, 1)
 
 '''
