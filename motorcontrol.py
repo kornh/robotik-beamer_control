@@ -20,11 +20,10 @@ print("Variablen deklariert")
 
 ## Setzten der Portrichtung
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(PINS, GPIO.OUT)
-#GPIO.setup(PINS[0][0], GPIO.OUT)
-#GPIO.setup(PINS[0][1], GPIO.OUT)
-#GPIO.setup(PINS[1][0], GPIO.OUT)
-#GPIO.setup(PINS[1][1], GPIO.OUT)
+GPIO.setup(PINS[0][0], GPIO.OUT)
+GPIO.setup(PINS[0][1], GPIO.OUT)
+GPIO.setup(PINS[1][0], GPIO.OUT)
+GPIO.setup(PINS[1][1], GPIO.OUT)
 
 print("Portrichtungen gesetzt")
 
