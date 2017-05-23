@@ -3,7 +3,7 @@
 import sys
 from urllib import parse
 from http import server
-from motorcontrol import set_pin
+import motorcontrol
 
 JSON_FORMAT = "{{'motor': {num}, 'status': {status}}}"
 DEFAULT_PORT = 8000
@@ -41,7 +41,7 @@ class PiFaceWebHandler(server.BaseHTTPRequestHandler):
 
         print("Request Motor:{} Status:{}.".format(motor, status))
 
-        set_pin(motor, status)
+        motorcontrol.set_pin(motor, status)
         self.success_response(motor, status)
 
     def success_response(self, motor, status):
@@ -99,3 +99,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print('^C received, shutting down server')
         HTTPD.socket.close()
+        motorcontrol.reset()
