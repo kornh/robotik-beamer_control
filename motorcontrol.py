@@ -35,16 +35,20 @@ def set_pin(motor, status):
     GPIO.output(PINS[1][0], 0)
     GPIO.output(PINS[1][1], 0)
 
+    if status == 0:
+        return
+
     motor = (0 if motor == 1 else 1)
     status = (0 if status > 0 else 1)
     print('Motor: {} Status: {}'.format(motor, status))
+
     pin = PINS[motor][status]
     print(pin)
     GPIO.output(pin, 1)
 
 def reset():
     """Reset the GPIO-Pins"""
-    GPIO.cleanup()          # Bei Programabbruch GPIO zuruecksetzten
+    GPIO.cleanup()           # Bei Programabbruch GPIO zuruecksetzten
 '''
     time.sleep(1)
 '''
