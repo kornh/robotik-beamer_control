@@ -30,7 +30,11 @@ print("Portrichtungen gesetzt")
 
 def set_pin(motor, status):
     """Set the pins to control the motors"""
-    GPIO.output(PINS, 0)
+
+    GPIO.output(PINS[0][0], 0)
+    GPIO.output(PINS[0][1], 0)
+    GPIO.output(PINS[1][0], 0)
+    GPIO.output(PINS[1][1], 0)
 
     motor = (0 if motor == 1 else 1)
     status = (0 if status > 0 else 1)
